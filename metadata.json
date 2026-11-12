@@ -1,0 +1,8 @@
+{
+  "name": "감정서가 - 기분으로 찾는 책",
+  "description": "오늘 마음의 날씨와 감정에 맞는 한국어 출간 도서를 큐레이션해 주는 AI 감정 서가입니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
