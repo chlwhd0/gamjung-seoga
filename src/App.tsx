@@ -200,6 +200,8 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    // Firebase 로그인(추천 이력 열람용)도 함께 해제합니다.
+    import('./utils/firebaseAdminAuth').then(m => m.signOutFirebase()).catch(() => {});
     clearAdminSession();
     setAdminUser(null);
     setIsAdminOpen(false);

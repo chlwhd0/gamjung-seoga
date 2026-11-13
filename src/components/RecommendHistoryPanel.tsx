@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { History, RefreshCw, LogIn, LogOut, ShieldCheck, AlertCircle } from 'lucide-react';
-import { getAuth, onAuthStateChanged, signInWithPopup, signOut, GoogleAuthProvider, User } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore, collection, query, orderBy, limit, getDocs } from 'firebase/firestore/lite';
 import { getFirebaseApp } from '../utils/firebaseApp';
+import { signInWithGoogleForAdmin, signOutFirebase, isPopupClosed, describeAuthError } from '../utils/firebaseAdminAuth';
 
 // 운영자 전용 "추천 이력" 화면
 //  - Firebase 로그인(구글)을 거치고, 읽기 권한은 Firestore 보안 규칙(firestore.rules)이 서버에서 확인합니다.
@@ -81,20 +82,14 @@ export const RecommendHistoryPanel: React.FC = () => {
   const handleLogin = async () => {
     setError(null);
     try {
-      await signInWithPopup(getAuth(getFirebaseApp()), new GoogleAuthProvider());
+      await signInWithGoogleForAdmin();
     } catch (e: any) {
-      if (e?.code === 'auth/popup-closed-by-user' || e?.code === 'auth/cancelled-popup-request') return;
-      setError(
-        e?.code === 'auth/unauthorized-domain'
-          ? '이 주소는 로그인이 허용되지 않았습니다. gamjung-seoga.web.app 주소에서 열어 주세요.'
-          : e?.code === 'auth/operation-not-allowed' || e?.code === 'auth/configuration-not-found'
-          ? 'Firebase에서 구글 로그인이 아직 켜져 있지 않습니다. (Firebase 콘솔 → Authentication → 시작하기 → Sign-in method → Google 사용 설정)'
-          : '로그인에 실패했습니다. 다시 시도해 주세요.'
-      );
+      if (isPopupClosed(e)) return;
+      setError(describeAuthError(e));
     }
   };
 
-  const handleLogout = () => signOut(getAuth(getFirebaseApp()));
+  const handleLogout = () => signOutFirebase();
 
   // 집계
   const moodCount: Record<string, number> = {};
@@ -126,7 +121,7 @@ export const RecommendHistoryPanel: React.FC = () => {
           <div className="space-y-3">
             <div className="flex items-start gap-2 text-xs text-[var(--soft)] bg-[var(--page)] border border-[var(--line)] rounded p-3">
               <ShieldCheck className="w-4 h-4 text-[var(--brass)] shrink-0 mt-0.5" />
-              <span>추천 이력은 운영자 구글 계정으로 한 번 더 로그인해야 볼 수 있습니다. 권한은 서버(Firestore 보안 규칙)가 확인합니다.</span>
+              <span>관리자 로그인 화면에서 Google 계정으로 로그인했다면 바로 보입니다. 비밀번호로 로그인했다면 여기서 운영자 구글 계정으로 한 번 더 로그인해 주세요. 권한은 서버(Firestore 보안 규칙)가 확인합니다.</span>
             </div>
             <button
               type="button"

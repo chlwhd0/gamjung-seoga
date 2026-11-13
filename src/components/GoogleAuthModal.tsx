@@ -41,6 +41,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
   const [isSuccess, setIsSuccess] = useState<AdminUser | null>(null);
   const [unauthorizedEmail, setUnauthorizedEmail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [firebaseError, setFirebaseError] = useState<string | null>(null);
 
   // Client ID Setup Modal state
   const [showClientIdSetup, setShowClientIdSetup] = useState(false);
@@ -67,7 +68,45 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
   };
 
   // 1. Google Login Button Click
-  const handleGoogleLoginClick = () => {
+  //    Firebase 구글 로그인을 먼저 사용합니다. (Client ID 설정이 필요 없고, 추천 이력 탭과 같은 로그인을 함께 씁니다)
+  //    Firebase 로그인이 아직 켜져 있지 않은데 예전 방식(Client ID)이 설정돼 있으면 예전 방식으로 진행합니다.
+  const handleGoogleLoginClick = async () => {
+    setIsLoading(true);
+    setFirebaseError(null);
+    try {
+      const { signInWithGoogleForAdmin, signOutFirebase } = await import('../utils/firebaseAdminAuth');
+      const user = await signInWithGoogleForAdmin();
+      const email = user.email || '';
+      if (email && user.emailVerified && isAuthorizedAdmin(email)) {
+        handleAuthSuccess({
+          email,
+          name: user.displayName || email.split('@')[0],
+          picture: user.photoURL || undefined,
+          sub: user.uid,
+          loginAt: new Date().toISOString()
+        });
+      } else {
+        // 권한이 없는 계정이면 Firebase 로그인도 바로 해제합니다.
+        await signOutFirebase();
+        setUnauthorizedEmail(email || '(이메일 없음)');
+      }
+    } catch (err: any) {
+      const { isPopupClosed, describeAuthError } = await import('../utils/firebaseAdminAuth');
+      if (!isPopupClosed(err)) {
+        const notEnabled = err?.code === 'auth/operation-not-allowed' || err?.code === 'auth/configuration-not-found';
+        if (notEnabled && configuredClientId) {
+          handleLegacyGoogleLogin();
+          return;
+        }
+        setFirebaseError(describeAuthError(err));
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // (기존 방식) Google Client ID 를 직접 설정해서 로그인
+  const handleLegacyGoogleLogin = () => {
     const g = (window as any).google;
 
     // If client ID is configured and Google OAuth2 SDK is available, trigger real Google popup
@@ -145,7 +184,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
     saveGoogleClientId(clientIdInput.trim());
     setShowClientIdSetup(false);
     setTimeout(() => {
-      handleGoogleLoginClick();
+      handleLegacyGoogleLogin();
     }, 150);
   };
 
@@ -392,6 +431,12 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
                 </svg>
                 <span>{isLoading ? '구글 계정 확인 중…' : 'Google 계정으로 로그인'}</span>
               </button>
+              {firebaseError && (
+                <div className="mt-2 flex items-start gap-1.5 text-[11px] text-[var(--err)] bg-[var(--err-bg)] rounded p-2 leading-relaxed">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>{firebaseError}</span>
+                </div>
+              )}
             </div>
 
             {/* Divider */}
