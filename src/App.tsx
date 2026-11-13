@@ -16,6 +16,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { AdminAIConfig } from './types/admin';
 import { loadAdminConfig, saveAdminConfig } from './utils/adminConfig';
 import { AdminUser, loadAdminSession, clearAdminSession } from './utils/googleAuth';
+import { recommendOffline } from './utils/offlineRecommend';
 
 interface BookItem {
   title: string;
@@ -23,6 +24,8 @@ interface BookItem {
   genre: string;
   quote: string;
   reason: string;
+  /** true 이면 quote 가 책 속 문장이 아니라 "책 소개 한 줄"입니다 (기본 도서 목록) */
+  gist?: boolean;
 }
 
 interface MoodOption {
@@ -272,24 +275,30 @@ export default function App() {
 
     try {
       const exclude = isAgain ? seenTitles : [];
-      const res = await fetch('/api/recommend', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          base,
-          level: typed ? null : gaugeLevel,
-          keyword,
-          typed: !!typed,
-          exclude,
-          adminConfigOverride: adminConfig
-        })
-      });
+      let data: any;
+      try {
+        const res = await fetch('/api/recommend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            base,
+            level: typed ? null : gaugeLevel,
+            keyword,
+            typed: !!typed,
+            exclude,
+            adminConfigOverride: adminConfig
+          })
+        });
 
-      if (!res.ok) {
-        throw new Error('추천 결과를 받아오지 못했습니다.');
+        if (!res.ok) {
+          throw new Error('추천 결과를 받아오지 못했습니다.');
+        }
+
+        data = await res.json();
+      } catch {
+        // AI 서버에 연결할 수 없으면(예: GitHub Pages) 미리 골라 둔 기본 도서에서 추천합니다.
+        data = recommendOffline(base, gaugeLevel, !!typed, exclude, adminConfig.bookCount || 3);
       }
-
-      const data = await res.json();
 
       if (data.crisis) {
         setIsCrisis(true);
@@ -322,7 +331,11 @@ export default function App() {
         : data.source === 'claude' 
         ? 'Claude' 
         : '서점 큐레이터';
-      setSourceNote(`${engineName}가 큐레이터 역할로 고른 추천입니다. 구매 전 제목과 저자를 확인해 주세요. 대표 문장은 번역판마다 다를 수 있습니다.`);
+      setSourceNote(
+        data.source === 'offline'
+          ? '마음의 날씨와 기분의 세기에 맞춰 미리 골라 둔 기본 도서 목록에서 추천했어요. AI 큐레이션 서버에 연결되지 않은 상태입니다. 구매 전 제목과 저자를 확인해 주세요.'
+          : `${engineName}가 큐레이터 역할로 고른 추천입니다. 구매 전 제목과 저자를 확인해 주세요. 대표 문장은 번역판마다 다를 수 있습니다.`
+      );
 
       if (isAgain) {
         setSuccessNotice(`새로 추천했어요 · 이전 ${seenTitles.length}권은 제외했어요`);
@@ -720,7 +733,7 @@ export default function App() {
 
                         {b.quote && (
                           <blockquote className="text-xs font-serif italic text-[var(--ink)] border-l-2 border-[var(--brass)] pl-2.5 my-1.5 leading-relaxed opacity-95">
-                            “{b.quote}”
+                            {b.gist ? b.quote : `“${b.quote}”`}
                           </blockquote>
                         )}
 
