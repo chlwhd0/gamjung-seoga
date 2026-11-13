@@ -17,6 +17,7 @@ import { AdminAIConfig } from './types/admin';
 import { loadAdminConfig, saveAdminConfig } from './utils/adminConfig';
 import { AdminUser, loadAdminSession, clearAdminSession } from './utils/googleAuth';
 import { recommendOffline } from './utils/offlineRecommend';
+import { saveRecommendHistory } from './utils/recommendHistory';
 
 interface BookItem {
   title: string;
@@ -322,6 +323,16 @@ export default function App() {
       const addedTitles = newBooks.map(b => b.title);
       setSeenTitles(prev => [...prev, ...addedTitles]);
 
+      // 추천 이력 저장 (선택값만, 직접 적은 글은 저장하지 않음 · 실패해도 화면에는 영향 없음)
+      saveRecommendHistory({
+        mood: data.emotion || (typed ? '' : base),
+        level: typed ? null : gaugeLevel,
+        typed: !!typed,
+        titles: addedTitles,
+        source: data.source || 'sample-curation',
+        isAgain,
+      });
+
       if (data.source) {
         setApiMode(data.source);
       }
@@ -552,6 +563,9 @@ export default function App() {
                   </>
                 )}
               </button>
+              <p className="mt-2 text-[11px] leading-relaxed text-[var(--soft)] text-center">
+                추천 기록(고른 마음의 날씨·기분의 세기·추천된 책)은 누구인지 알 수 없게 저장돼요. 직접 적은 글은 저장하지 않습니다.
+              </p>
             </div>
           </section>
 

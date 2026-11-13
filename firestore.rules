@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// 추천 이력 보안 규칙
+//  - 방문자: 새 이력 "쓰기"만 가능 (읽기·수정·삭제는 모두 막음)
+//  - 운영자: Firebase 콘솔(관리자 권한)에서만 열람·삭제 가능 (콘솔은 이 규칙의 영향을 받지 않음)
+//  - 저장 가능한 값은 아래 모양과 일치하는 것만 허용 (직접 적은 글 같은 다른 내용은 저장 불가)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /recommendations/{id} {
+      allow read, update, delete: if false;
+
+      allow create: if request.resource.data.keys().hasOnly(
+                         ['mood', 'level', 'inputType', 'titles', 'source', 'isAgain', 'createdAt'])
+                    && request.resource.data.keys().hasAll(
+                         ['mood', 'inputType', 'titles', 'source', 'isAgain', 'createdAt'])
+                    && request.resource.data.mood in
+                         ['분노', '불안', '슬픔', '외로움', '무기력', '지침', '설렘', '기쁨', '평온']
+                    && (!('level' in request.resource.data)
+                         || request.resource.data.level == null
+                         || (request.resource.data.level is int
+                             && request.resource.data.level >= 1
+                             && request.resource.data.level <= 5))
+                    && request.resource.data.inputType in ['card', 'text']
+                    && request.resource.data.titles is list
+                    && request.resource.data.titles.size() >= 1
+                    && request.resource.data.titles.size() <= 5
+                    && request.resource.data.source in ['offline', 'gemini', 'claude', 'sample-curation']
+                    && request.resource.data.isAgain is bool
+                    && request.resource.data.createdAt == request.time;
+    }
+
+    // 그 밖의 모든 경로는 전부 차단
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
