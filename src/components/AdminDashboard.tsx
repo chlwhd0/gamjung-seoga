@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { 
   ArrowLeft, 
   RotateCcw, 
@@ -23,7 +23,8 @@ import {
   Users,
   ShieldCheck,
   UserPlus,
-  Trash2
+  Trash2,
+  History
 } from 'lucide-react';
 import { 
   AdminAIConfig, 
@@ -51,7 +52,10 @@ interface AdminDashboardProps {
   onConfigChange: (newConfig: AdminAIConfig) => void;
 }
 
-type TabKey = 'persona' | 'model' | 'rules' | 'playground' | 'admins';
+type TabKey = 'persona' | 'model' | 'rules' | 'playground' | 'admins' | 'history';
+
+// 추천 이력 화면은 열 때만 불러옵니다 (Firebase 로그인 코드가 첫 화면을 무겁게 하지 않도록)
+const RecommendHistoryPanel = lazy(() => import('./RecommendHistoryPanel'));
 
 const AVAILABLE_GENRES = [
   '소설', '에세이', '인문/철학', '시', '심리/치유', '자기계발', '고전', '과학/교양', '역사/사회'
@@ -368,7 +372,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <Users className="w-4 h-4" />
             <span>5. 관리자 권한 목록</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('history')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap cursor-pointer transition-colors ${
+              activeTab === 'history'
+                ? 'border-[var(--brass)] text-[var(--ink)] bg-[var(--panel)]'
+                : 'border-transparent text-[var(--soft)] hover:text-[var(--ink)]'
+            }`}
+          >
+            <History className="w-4 h-4" />
+            <span>6. 추천 이력</span>
+          </button>
         </div>
+
+        {/* Tab 6: Recommendation History (Firestore) */}
+        {activeTab === 'history' && (
+          <Suspense fallback={<p className="text-xs text-[var(--soft)]">불러오는 중…</p>}>
+            <RecommendHistoryPanel />
+          </Suspense>
+        )}
 
         {/* Tab 1: Persona & System Prompt */}
         {activeTab === 'persona' && (
