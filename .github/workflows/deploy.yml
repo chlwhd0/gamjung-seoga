@@ -2,9 +2,9 @@ name: GitHub Pages 배포
 
 # main 브랜치에 푸시할 때마다 화면(정적 파일)을 빌드해서 GitHub Pages 에 올립니다.
 # 주의: GitHub Pages 는 서버를 실행하지 못하므로 AI 추천 같은 /api 기능은 동작하지 않습니다.
+# 현재는 Firebase(gamjung-seoga-v2)로 배포하므로 GitHub Pages 자동 배포는 꺼 둔 상태입니다.
+# 다시 쓰려면 아래 on: 안에 push 항목(branches: [main])을 되살리고, 저장소 설정에서 Pages를 "GitHub Actions"로 켜세요.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

@@ -6,12 +6,12 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBUs6q_UYf5AmcmDSclA6rsXxr3wbjmzao',
-  authDomain: 'gamjung-seoga.firebaseapp.com',
-  projectId: 'gamjung-seoga',
-  storageBucket: 'gamjung-seoga.firebasestorage.app',
-  messagingSenderId: '246543419124',
-  appId: '1:246543419124:web:d84feb2b97c26b517340a1',
+  apiKey: 'AIzaSyAvIh39nDTyV-BlqChyumh53g8xnJl27JY',
+  authDomain: 'gamjung-seoga-v2.firebaseapp.com',
+  projectId: 'gamjung-seoga-v2',
+  storageBucket: 'gamjung-seoga-v2.firebasestorage.app',
+  messagingSenderId: '1049582644068',
+  appId: '1:1049582644068:web:a0849cbc9795e1aee62871',
 };
 
 export function getFirebaseApp(): FirebaseApp {
