@@ -8,14 +8,37 @@
     <meta property="og:title" content="감정서가 | 기분으로 찾는 책" />
     <meta property="og:description" content="오늘 마음의 날씨와 감정에 맞는 한국어 출간 도서를 큐레이션해 주는 AI 감정 서가입니다." />
     <meta property="og:type" content="website" />
+    <!-- 대표 주소·공유 미리보기·탭 아이콘 -->
+    <link rel="canonical" href="https://gamjung-seoga.web.app/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#5A3822" />
+    <meta property="og:url" content="https://gamjung-seoga.web.app/" />
+    <meta property="og:site_name" content="감정서가" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:image" content="https://gamjung-seoga.web.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="감정서가 - 기분으로 찾는 책" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="감정서가 | 기분으로 찾는 책" />
+    <meta name="twitter:description" content="오늘 마음의 날씨와 감정에 맞는 한국어 출간 도서를 큐레이션해 주는 AI 감정 서가입니다." />
+    <meta name="twitter:image" content="https://gamjung-seoga.web.app/og-image.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- 자바스크립트가 실행되기 전·실행되지 않는 환경(검색 봇, 미리보기 봇)에서 보이는 소개 문장입니다.
+         앱이 시작되면 #root 안의 내용은 자동으로 앱 화면으로 바뀝니다. -->
+    <div id="root">
+      <main style="max-width:640px;margin:0 auto;padding:48px 20px;font-family:'IBM Plex Sans KR',sans-serif;color:#3A2A1D;line-height:1.7">
+        <h1 style="font-family:'Nanum Myeongjo',serif">감정서가 · 기분으로 찾는 책</h1>
+        <p>오늘 마음의 날씨와 기분의 세기에 맞는 한국어 출간 도서를 골라 주는 감정 서가입니다.</p>
+        <p>분노, 불안, 슬픔, 외로움, 무기력, 지침, 설렘, 기쁨, 평온 중 지금 기분과 가장 닮은 카드를 고르고 기분의 세기를 정하면, 서점 책지기가 어울리는 책을 추천해 드려요.</p>
+      </main>
+    </div>
+    <noscript>이 서비스를 이용하려면 브라우저에서 자바스크립트를 켜 주세요.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
